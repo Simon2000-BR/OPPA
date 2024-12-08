@@ -57,7 +57,6 @@ if ($result->num_rows > 0) {
     }
 }
 
-// Fecha a conexão
 $conn->close();
 ?>
 
@@ -172,39 +171,36 @@ $conn->close();
     }
 
     .list-item {
-  background: #ecf0f1;
-  padding: 15px;
-  border-radius: 10px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  word-wrap: break-word;
-  display: flex;
-  flex-direction: column; /* Faz com que os elementos fiquem empilhados */
-  position: relative;
-}
-
-.delete-button {
-  background: #e74c3c;
-  color: white;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: 0.3s;
-  margin-top: 10px; /* Dá um espaçamento do conteúdo acima */
-  align-self: flex-end; /* Alinha o botão à direita */
-}
-
-.delete-button:hover {
-  background: #c0392b;
-}
-
-
-    /* Adiciona uma margem para o botão excluir e quebra de linha */
-    .list-item p {
-      clear: both;
-      margin-bottom: 20px;
+     background: #ecf0f1;
+     padding: 15px;
+     border-radius: 10px;
+     margin-bottom: 20px;
+     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+     position: relative;
+     word-wrap: break-word;
+     overflow-wrap: break-word;
+     width: 100%;
+     box-sizing: border-box;
     }
+    .delete-button {
+    background: #e74c3c;
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+    display: block; 
+    width: fit-content; 
+    margin-top: 10px; 
+    text-align: right; 
+    margin-left: auto; 
+   }
+
+   .delete-button:hover {
+    background: #c0392b;
+   }
+
 </style>
 
 </head>

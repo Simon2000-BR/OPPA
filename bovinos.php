@@ -1,22 +1,24 @@
 <?php
-require_once "conexao.php";
+// Conecta ao banco de dados
+require_once 'conexao.php';
 
-// Inicializa variável de erro
-$erro = '';
-$animaisCadastrados = [];
+$erro = ''; // Variável para mensagens de erro
+$bovinosCadastrados = []; // Lista de bovinos cadastrados
 
 // Verifica se o formulário foi enviado via POST
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['nome'], $_POST['alimentacao'], $_POST['idade'])) {
-        // Processa a entrada e insere no banco de dados
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+    $action = $_POST['action'];
+    
+    // Ação de adicionar bovino
+    if ($action === 'add' && isset($_POST['nome'], $_POST['alimentacao'], $_POST['idade'])) {
         $nome = $_POST['nome'] ?? '';
-        $alimentacao = $_POST['alimentacao'] ?? '';
-        $idade = $_POST['idade'] ?? 0;
-        $producao = $_POST['producao'] ?? '';
+        $alimentacao = $_POST['alimentacao'] ?? ''; 
+        $idade = $_POST['idade'] ?? 0; 
+        $producao = $_POST['producao'] ?? ''; 
 
-        // Valida os campos obrigatórios
+        // Verifica se os campos obrigatórios foram preenchidos
         if (empty($nome) || empty($alimentacao) || empty($idade)) {
-            $erro = "Todos os campos obrigatórios devem ser preenchidos.";
+            $erro = "Todos os campos obrigatórios devem ser preenchidos."; // Mensagem de erro
         } else {
             // Previne SQL Injection
             $nome = $conn->real_escape_string($nome);
@@ -24,38 +26,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $idade = (int)$idade;
             $producao = $conn->real_escape_string($producao);
 
-            // Insere no banco de dados
-            $sql = "INSERT INTO animais (nome, alimentacao, idade, producao) VALUES ('$nome', '$alimentacao', $idade, '$producao')";
+            // Insere o novo bovino no banco
+            $sql = "INSERT INTO bovinos (nome, alimentacao, idade, producao) VALUES ('$nome', '$alimentacao', $idade, '$producao')";
 
+            // Verifica se a inserção foi bem-sucedida
             if ($conn->query($sql) === TRUE) {
                 $erro = "Novo bovino cadastrado com sucesso!";
             } else {
-                $erro = "Erro ao cadastrar: " . $conn->error;
+                $erro = "Erro ao cadastrar: " . $conn->error; // Erro na inserção
             }
         }
     }
 }
 
-// Processa a exclusão de um bovino
+// Ação de exclusão de bovino
 if (isset($_GET['delete'])) {
     $id = (int)$_GET['delete'];
-    $delete_sql = "DELETE FROM animais WHERE id = $id";
+    $delete_sql = "DELETE FROM bovinos WHERE id = $id";
+    // Deleta o bovino e redireciona
     if ($conn->query($delete_sql) === TRUE) {
         header("Location: bovinos.php");
         exit;
     } else {
-        $erro = "Erro ao excluir bovino: " . $conn->error;
+        $erro = "Erro ao excluir bovino: " . $conn->error; // Erro na exclusão
     }
 }
 
-// Recupera os bovinos cadastrados para exibição
-$result = $conn->query("SELECT * FROM animais");
+// Recupera os bovinos cadastrados
+$result = $conn->query("SELECT * FROM bovinos");
 if ($result->num_rows > 0) {
+    // Adiciona os bovinos à lista
     while ($row = $result->fetch_assoc()) {
-        $animaisCadastrados[] = $row;
+        $bovinosCadastrados[] = $row;
     }
 }
-// Fecha a conexão
+
+// Fecha a conexão com o banco
 $conn->close();
 ?>
 
@@ -170,41 +176,37 @@ $conn->close();
     }
 
     .list-item {
-  background: #ecf0f1;
-  padding: 15px;
-  border-radius: 10px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  word-wrap: break-word;
-  display: flex;
-  flex-direction: column; /* Faz com que os elementos fiquem empilhados */
-  position: relative;
-}
-
-.delete-button {
-  background: #e74c3c;
-  color: white;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: 0.3s;
-  margin-top: 10px; /* Dá um espaçamento do conteúdo acima */
-  align-self: flex-end; /* Alinha o botão à direita */
-}
-
-.delete-button:hover {
-  background: #c0392b;
-}
-
-
-    /* Adiciona uma margem para o botão excluir e quebra de linha */
-    .list-item p {
-      clear: both;
-      margin-bottom: 20px;
+     background: #ecf0f1;
+     padding: 15px;
+     border-radius: 10px;
+     margin-bottom: 20px;
+     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+     position: relative;
+     word-wrap: break-word;
+     overflow-wrap: break-word;
+     width: 100%;
+     box-sizing: border-box;
     }
-</style>
+    .delete-button {
+    background: #e74c3c;
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+    display: block; 
+    width: fit-content; 
+    margin-top: 10px; 
+    text-align: right; 
+    margin-left: auto; 
+   }
 
+   .delete-button:hover {
+    background: #c0392b;
+   }
+
+</style>
 </head>
 <body>
   <header>
@@ -212,11 +214,11 @@ $conn->close();
       <button class="back-button">← Voltar</button>
     </a>
     <nav>
-        <a href="bovinos.php">Bovinos</a>
-        <a href="suinos.php">Suínos</a>
-        <a href="ovelhas.php">Ovelhas</a>
-        <a href="aves.php">Aves</a>
-        <a href="animais.php">Animais</a>
+      <a href="bovinos.php">Bovinos</a>
+      <a href="suinos.php">Suínos</a>
+      <a href="ovelhas.php">Ovelhas</a>
+      <a href="aves.php">Aves</a>
+      <a href="animais.php">Animais</a>
     </nav>
   </header>
 
@@ -226,9 +228,10 @@ $conn->close();
       <p style="color: green; text-align: center;"><?php echo $erro; ?></p>
     <?php endif; ?>
     <form method="POST">
+      <input type="hidden" name="action" value="add">
       <div class="form-group">
         <label for="nome">Nome do Bovino</label>
-        <input type="text" id="nome" name="nome" placeholder="Digite o nome do animal" required>
+        <input type="text" id="nome" name="nome" placeholder="Digite o nome do bovino" required>
       </div>
       <div class="form-group">
         <label for="alimentacao">Tipo de Alimentação</label>
@@ -247,19 +250,15 @@ $conn->close();
 
     <!-- Exibe os bovinos cadastrados -->
     <div class="list-container">
-      <?php if (count($animaisCadastrados) > 0): ?>
-        <?php foreach ($animaisCadastrados as $animal): ?>
-          <div class="list-item">
-            <strong>Nome:</strong> <?php echo $animal['nome']; ?><br>
-            <strong>Alimentação:</strong> <?php echo $animal['alimentacao']; ?><br>
-            <strong>Idade:</strong> <?php echo $animal['idade']; ?> anos<br>
-            <strong>Produção:</strong> <?php echo $animal['producao']; ?><br>
-            <a href="?delete=<?php echo $animal['id']; ?>" class="delete-button"onclick="return confirm('Tem certeza que deseja excluir?')">Excluir</a>
-          </div>
-        <?php endforeach; ?>
-      <?php else: ?>
-        <p>Nenhum bovino cadastrado ainda.</p>
-      <?php endif; ?>
+      <?php foreach ($bovinosCadastrados as $bovino): ?>
+        <div class="list-item">
+          <strong>Nome:</strong> <?php echo $bovino['nome']; ?><br>
+          <strong>Alimentação:</strong> <?php echo $bovino['alimentacao']; ?><br>
+          <strong>Idade:</strong> <?php echo $bovino['idade']; ?><br>
+          <strong>Produção:</strong> <?php echo $bovino['producao']; ?><br>
+          <a href="?delete=<?php echo $bovino['id']; ?>" class="delete-button" onclick="return confirm('Tem certeza que deseja excluir este bovino?');">Excluir</a>
+        </div>
+      <?php endforeach; ?>
     </div>
   </div>
 </body>

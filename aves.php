@@ -1,22 +1,24 @@
 <?php
+// Conecta ao banco de dados
 require_once 'conexao.php';
 
-// Inicializa variável de erro
-$erro = '';
-$avesCadastradas = [];
+$erro = ''; // Variável para mensagens de erro
+$avesCadastradas = []; // Lista de aves cadastradas
 
 // Verifica se o formulário foi enviado via POST
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['nome'], $_POST['alimentacao'], $_POST['idade'])) {
-        // Processa a entrada e insere no banco de dados
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+    $action = $_POST['action'];
+    
+    // Ação de adicionar ave
+    if ($action === 'add' && isset($_POST['nome'], $_POST['alimentacao'], $_POST['idade'])) {
         $nome = $_POST['nome'] ?? '';
-        $alimentacao = $_POST['alimentacao'] ?? '';
-        $idade = $_POST['idade'] ?? 0;
-        $producao = $_POST['producao'] ?? '';
+        $alimentacao = $_POST['alimentacao'] ?? ''; 
+        $idade = $_POST['idade'] ?? 0; 
+        $producao = $_POST['producao'] ?? ''; 
 
-        // Valida os campos obrigatórios
+        // Verifica se os campos obrigatórios foram preenchidos
         if (empty($nome) || empty($alimentacao) || empty($idade)) {
-            $erro = "Todos os campos obrigatórios devem ser preenchidos.";
+            $erro = "Todos os campos obrigatórios devem ser preenchidos."; // Mensagem de erro
         } else {
             // Previne SQL Injection
             $nome = $conn->real_escape_string($nome);
@@ -24,38 +26,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $idade = (int)$idade;
             $producao = $conn->real_escape_string($producao);
 
-            // Insere no banco de dados
+            // Insere a nova ave no banco
             $sql = "INSERT INTO aves (nome, alimentacao, idade, producao) VALUES ('$nome', '$alimentacao', $idade, '$producao')";
 
+            // Verifica se a inserção foi bem-sucedida
             if ($conn->query($sql) === TRUE) {
                 $erro = "Nova ave cadastrada com sucesso!";
             } else {
-                $erro = "Erro ao cadastrar: " . $conn->error;
+                $erro = "Erro ao cadastrar: " . $conn->error; // Erro na inserção
             }
         }
     }
 }
 
-// Processa a exclusão de uma ave
+// Ação de exclusão de ave
 if (isset($_GET['delete'])) {
     $id = (int)$_GET['delete'];
     $delete_sql = "DELETE FROM aves WHERE id = $id";
+    // Deleta a ave e redireciona
     if ($conn->query($delete_sql) === TRUE) {
         header("Location: aves.php");
         exit;
     } else {
-        $erro = "Erro ao excluir ave: " . $conn->error;
+        $erro = "Erro ao excluir ave: " . $conn->error; // Erro na exclusão
     }
 }
 
-// Recupera as aves cadastradas para exibição
+// Recupera as aves cadastradas
 $result = $conn->query("SELECT * FROM aves");
 if ($result->num_rows > 0) {
+    // Adiciona as aves à lista
     while ($row = $result->fetch_assoc()) {
         $avesCadastradas[] = $row;
     }
 }
-// Fecha a conexão
+
+// Fecha a conexão com o banco
 $conn->close();
 ?>
 
@@ -170,41 +176,36 @@ $conn->close();
     }
 
     .list-item {
-  background: #ecf0f1;
-  padding: 15px;
-  border-radius: 10px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  word-wrap: break-word;
-  display: flex;
-  flex-direction: column; /* Faz com que os elementos fiquem empilhados */
-  position: relative;
-}
-
-.delete-button {
-  background: #e74c3c;
-  color: white;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: 0.3s;
-  margin-top: 10px; /* Dá um espaçamento do conteúdo acima */
-  align-self: flex-end; /* Alinha o botão à direita */
-}
-
-.delete-button:hover {
-  background: #c0392b;
-}
-
-
-    /* Adiciona uma margem para o botão excluir e quebra de linha */
-    .list-item p {
-      clear: both;
-      margin-bottom: 20px;
+     background: #ecf0f1;
+     padding: 15px;
+     border-radius: 10px;
+     margin-bottom: 20px;
+     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+     position: relative;
+     word-wrap: break-word;
+     overflow-wrap: break-word;
+     width: 100%;
+     box-sizing: border-box;
     }
-</style>
+    .delete-button {
+    background: #e74c3c;
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+    display: block; 
+    width: fit-content; 
+    margin-top: 10px; 
+    text-align: right; 
+    margin-left: auto; 
+   }
 
+   .delete-button:hover {
+    background: #c0392b;
+   }
+</style>
 </head>
 <body>
   <header>
@@ -212,11 +213,11 @@ $conn->close();
       <button class="back-button">← Voltar</button>
     </a>
     <nav>
-    <a href="bovinos.php">Bovinos</a>
-        <a href="suinos.php">Suínos</a>
-        <a href="ovelhas.php">Ovelhas</a>
-        <a href="aves.php">Aves</a>
-        <a href="animais.php">Animais</a>
+      <a href="bovinos.php">Bovinos</a>
+      <a href="suinos.php">Suínos</a>
+      <a href="ovelhas.php">Ovelhas</a>
+      <a href="aves.php">Aves</a>
+      <a href="animais.php">Animais</a>
     </nav>
   </header>
 
@@ -226,6 +227,7 @@ $conn->close();
       <p style="color: green; text-align: center;"><?php echo $erro; ?></p>
     <?php endif; ?>
     <form method="POST">
+      <input type="hidden" name="action" value="add">
       <div class="form-group">
         <label for="nome">Nome da Ave</label>
         <input type="text" id="nome" name="nome" placeholder="Digite o nome da ave" required>
@@ -245,21 +247,16 @@ $conn->close();
       <button type="submit">Adicionar Ave</button>
     </form>
 
-    <!-- Exibe as aves cadastradas -->
     <div class="list-container">
-      <?php if (count($avesCadastradas) > 0): ?>
-        <?php foreach ($avesCadastradas as $ave): ?>
-          <div class="list-item">
-            <strong>Nome:</strong> <?php echo $ave['nome']; ?><br>
-            <strong>Alimentação:</strong> <?php echo $ave['alimentacao']; ?><br>
-            <strong>Idade:</strong> <?php echo $ave['idade']; ?> anos<br>
-            <strong>Produção:</strong> <?php echo $ave['producao']; ?><br>
-            <a href="?delete=<?php echo $ave['id']; ?>" class="delete-button"onclick="return confirm('Tem certeza que deseja excluir?')">Excluir</a>
-          </div>
-        <?php endforeach; ?>
-      <?php else: ?>
-        <p style="text-align: center;">Nenhuma ave cadastrada.</p>
-      <?php endif; ?>
+      <?php foreach ($avesCadastradas as $ave): ?>
+        <div class="list-item">
+          <strong>Nome:</strong> <?php echo htmlspecialchars($ave['nome']); ?><br>
+          <strong>Alimentação:</strong> <?php echo htmlspecialchars($ave['alimentacao']); ?><br>
+          <strong>Idade:</strong> <?php echo htmlspecialchars($ave['idade']); ?><br>
+          <strong>Produção:</strong> <?php echo htmlspecialchars($ave['producao']); ?><br>
+          <a href="?delete=<?php echo $ave['id']; ?>" class="delete-button" onclick="return confirm('Você tem certeza que deseja excluir este bovino?')">Excluir</a>
+        </div>
+      <?php endforeach; ?>
     </div>
   </div>
 </body>

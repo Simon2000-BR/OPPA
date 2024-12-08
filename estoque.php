@@ -165,7 +165,7 @@ button:hover {
   margin-top: 20px;
 }
 
-/* Ajuste para o conteúdo da lista para não quebrar e envolver */
+/* Ajuste para o conteúdo da lista para não quebrar */
 .list-item {
   background: #ecf0f1;
   padding: 15px;
@@ -192,10 +192,10 @@ button:hover {
   cursor: pointer;
   transition: 0.3s;
   display: block;
-  width: fit-content; /* Ajusta o tamanho do botão ao seu conteúdo */
-  margin-top: 10px; /* Adiciona um pequeno espaçamento acima do botão */
-  text-align: right; /* Alinha o botão à direita */
-  margin-left: auto; /* Garante que o botão vá para o lado direito */
+  width: fit-content; 
+  margin-top: 10px; 
+  text-align: right; 
+  margin-left: auto; 
 }
 
 .delete-button:hover {
@@ -211,40 +211,60 @@ button:hover {
   </header>
 
   <div class="container">
-    <h2>Cadastro de Insumos</h2>
-    <?php if (!empty($erro)): ?>
-      <p style="color: green; text-align: center;"><?php echo $erro; ?></p>
-    <?php endif; ?>
-    <form method="POST">
-      <input type="hidden" name="action" value="add">
-      <div class="form-group">
-        <label for="nome">Descrição</label>
-        <input type="text" id="nome" name="nome" placeholder="Digite o nome do insumo" required>
-      </div>
-      <div class="form-group">
-        <label for="quantidade">Quantidade</label>
-        <input type="number" id="quantidade" name="quantidade" placeholder="Digite a quantidade" required>
-      </div>
-      <button type="submit">Adicionar Insumo</button>
-    </form>
+  <h2>Cadastro de Insumos</h2>
 
-    <div class="list-container">
-      <?php if (count($insumosCadastrados) > 0): ?>
-        <?php foreach ($insumosCadastrados as $insumo): ?>
-          <div class="list-item">
-            <div class="item-info" style="flex-grow: 1;">
-              <strong>Descrição:</strong> <?php echo $insumo['nome']; ?><br>
-              <strong>Quantidade:</strong> <?php echo $insumo['quantidade']; ?>
-            </div>
-            <div class="item-actions">
-              <a href="?delete=<?php echo $insumo['id']; ?>" class="delete-button" onclick="return confirm('Tem certeza que deseja excluir?')">Excluir</a>
-            </div>
-          </div>
-        <?php endforeach; ?>
-      <?php else: ?>
-        <p>Nenhum insumo cadastrado.</p>
-      <?php endif; ?>
+  <!-- Verifica se há uma mensagem de erro e exibe -->
+  <?php if (!empty($erro)): ?>
+    <p style="color: green; text-align: center;"><?php echo $erro; ?></p>
+  <?php endif; ?>
+
+  <!-- Formulário para adicionar um novo insumo -->
+  <form method="POST">
+    <!-- Campo oculto para determinar a ação (adicionar) -->
+    <input type="hidden" name="action" value="add">
+
+    <!-- Campo de descrição do insumo -->
+    <div class="form-group">
+      <label for="nome">Descrição</label>
+      <input type="text" id="nome" name="nome" placeholder="Digite o nome do insumo" required>
     </div>
+
+    <!-- Campo de quantidade do insumo -->
+    <div class="form-group">
+      <label for="quantidade">Quantidade</label>
+      <input type="number" id="quantidade" name="quantidade" placeholder="Digite a quantidade" required>
+    </div>
+
+    <!-- Botão para enviar o formulário e adicionar o insumo -->
+    <button type="submit">Adicionar Insumo</button>
+  </form>
+
+  <!-- Container que lista os insumos cadastrados -->
+  <div class="list-container">
+    <!-- Verifica se há insumos cadastrados -->
+    <?php if (count($insumosCadastrados) > 0): ?>
+      <!-- Exibe cada insumo cadastrado -->
+      <?php foreach ($insumosCadastrados as $insumo): ?>
+        <div class="list-item">
+          <!-- Informações do insumo -->
+          <div class="item-info" style="flex-grow: 1;">
+            <strong>Descrição:</strong> <?php echo $insumo['nome']; ?><br>
+            <strong>Quantidade:</strong> <?php echo $insumo['quantidade']; ?>
+          </div>
+
+          <!-- Ações (exclusão) do insumo -->
+          <div class="item-actions">
+            <!-- Link para excluir o insumo com confirmação -->
+            <a href="?delete=<?php echo $insumo['id']; ?>" class="delete-button" onclick="return confirm('Tem certeza que deseja excluir?')">Excluir</a>
+          </div>
+        </div>
+      <?php endforeach; ?>
+    <?php else: ?>
+      <!--  caso não tenha insumos cadastrados -->
+      <p>Nenhum insumo cadastrado.</p>
+    <?php endif; ?>
   </div>
+</div>
+
 </body>
 </html>

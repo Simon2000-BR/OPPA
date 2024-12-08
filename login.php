@@ -1,6 +1,6 @@
 <?php
 // Incluir o arquivo de conexão
-require_once 'conexao.php'; // Ajuste o caminho se necessário
+require_once 'conexao.php'; 
 
 $erro = ''; // Variável para armazenar o erro
 
@@ -47,7 +47,7 @@ if ($conn) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="loguin.css"> <!-- Seu CSS personalizado -->
+    <link rel="stylesheet" href="loguin.css"> 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> <!-- Ícones -->
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
     <title>Login</title>
