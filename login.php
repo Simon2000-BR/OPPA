@@ -1,4 +1,9 @@
 <?php
+// garante que uma sessão só será iniciada se ainda não existir nenhuma ativa.
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+
 // Incluir o arquivo de conexão
 require_once 'conexao.php'; 
 
@@ -8,29 +13,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'];
     $senha = $_POST['senha'];
 
-    // Criptografar a senha usando MD5
-    $senha_md5 = md5($senha);
-
-    // Verificar se o e-mail e senha são válidos
-    $sql = "SELECT id, nome, email FROM cadastro WHERE email = ? AND senha = ?";
+    // Verificar se o e-mail existe no banco de dados
+    $sql = "SELECT id, nome, email, senha FROM usuarios WHERE email = ?";  
     $stmt = mysqli_prepare($conn, $sql);
-    mysqli_stmt_bind_param($stmt, "ss", $email, $senha_md5);
+    mysqli_stmt_bind_param($stmt, "s", $email);
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
 
-    if (mysqli_num_rows($result) > 0) {
-        $usuario = mysqli_fetch_assoc($result);
+// Verifica se o e-mail corresponde a um usuário no banco de dados
+if (mysqli_num_rows($result) > 0) { 
+    $usuario = mysqli_fetch_assoc($result);
 
-        // Iniciar a sessão e armazenar os dados do usuário
-        session_start();
-        $_SESSION['usuario'] = [
-            'nome' => $usuario['nome'],
-            'email' => $usuario['email']
-        ];
+        // Verifica a senha usando MD5
+        if (md5($senha) === $usuario['senha']) {
+            // Iniciar a sessão e armazenar os dados do usuário
+            $_SESSION['usuario'] = [
+                'id' => $usuario['id'],  
+                'nome' => $usuario['nome'],
+                'email' => $usuario['email']
+            ];
 
-        // Redirecionar para a página inicial (index)
-        header("Location: index.php");
-        exit;
+            // Armazenar o ID do usuário na variável de sessão
+            $_SESSION['usuario_id'] = $usuario['id'];
+
+            // Redirecionar para a página inicial (index)
+            header("Location: index.php");
+            exit;
+        } else {
+            $erro = "E-mail ou senha inválidos!";
+        }
     } else {
         $erro = "E-mail ou senha inválidos!";
     }

@@ -49,26 +49,26 @@ $email_usuario = isset($_SESSION['usuario']['email']) ? $_SESSION['usuario']['em
             font-size: 36px;
         }
         #menu .card {
-    margin-left: auto; 
-    margin-right: 20px;
-    background-color: white;
-    border-radius: 50%;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    width: 60px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 10px;
-    cursor: pointer;
-    position: relative;
-    font-size: 20px; 
-}
+            margin-left: auto; 
+            margin-right: 20px;
+            background-color: white;
+            border-radius: 50%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 10px;
+            cursor: pointer;
+            position: relative;
+            font-size: 20px; 
+        }
 
-#menu .card:hover {
-    background-color: rgb(240, 240, 240);
-}
+        #menu .card:hover {
+            background-color: rgb(240, 240, 240);
+        }
 
         #userCard {
             background-color: white;
@@ -106,8 +106,11 @@ $email_usuario = isset($_SESSION['usuario']['email']) ? $_SESSION['usuario']['em
         }
 
         #userCard p {
-            color: #555;
+            color:black;
             margin: 5px 0;
+            font-size: 1.2em;
+            height: 70px;
+
         }
 
         main {
@@ -190,9 +193,10 @@ $email_usuario = isset($_SESSION['usuario']['email']) ? $_SESSION['usuario']['em
     </header>
 
     <div id="userCard">
-        <h2><?php echo htmlspecialchars($nome_usuario); ?></h2>
-        <p><?php echo htmlspecialchars($email_usuario); ?></p>
-    </div>
+  <h2><?php echo htmlspecialchars($nome_usuario); ?></h2>
+  <p><?php echo htmlspecialchars($email_usuario); ?></p>
+  <button class="button"><a href="logout.php">Sair</a></button>
+</div>
 
     <script>
         function toggleCard() {

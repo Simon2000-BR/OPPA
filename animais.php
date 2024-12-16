@@ -1,68 +1,81 @@
 <?php
-// Conecta ao banco de dados
+// Iniciar a sessão para garantir que o ID do usuário está disponível
+session_start();
+
+// Verificar se o usuário está logado (se o user_id está na sessão)
+if (!isset($_SESSION['usuario_id'])) {
+    die("Você precisa estar logado para cadastrar um animal.");
+}
+
+// Incluir o arquivo de conexão
 require_once 'conexao.php';
 
-$erro = ''; // Variável para mensagens de erro
-$animaisCadastrados = []; // Lista de animais cadastrados
+$erro = ''; // Variável para armazenar o erro
 
-// Verifica se o formulário foi enviado via POST
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
-    $action = $_POST['action'];
-    
-    // Ação de adicionar animal
-    if ($action === 'add' && isset($_POST['nome'], $_POST['alimentacao'], $_POST['idade'])) {
-        $nome = $_POST['nome'] ?? '';
-        $alimentacao = $_POST['alimentacao'] ?? ''; 
-        $idade = $_POST['idade'] ?? 0; 
-        $producao = $_POST['producao'] ?? ''; 
+// Adicionar condição para verificar a ação de cadastrar antes de inserir no banco
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] == 'add') {
+    // Coletar os dados do formulário
+    $nome = $_POST['nome'];
+    $alimentacao = $_POST['alimentacao'];
+    $idade = $_POST['idade'];
+    $producao = $_POST['producao'];
 
-        // Verifica se os campos obrigatórios foram preenchidos
-        if (empty($nome) || empty($alimentacao) || empty($idade)) {
-            $erro = "Todos os campos obrigatórios devem ser preenchidos."; // Mensagem de erro
+    // Verifica se os campos obrigatórios foram preenchidos
+    if (empty($nome) || empty($alimentacao) || empty($idade)) {
+        $erro = "Todos os campos obrigatórios devem ser preenchidos."; // Mensagem de erro
+    } else {
+        // Previne SQL Injection
+        $nome = $conn->real_escape_string($nome);
+        $alimentacao = $conn->real_escape_string($alimentacao);
+        $idade = (int)$idade;
+        $producao = $conn->real_escape_string($producao);
+
+        // Obtém o user_id da sessão
+        $user_id = $_SESSION['usuario_id'];
+
+        // Insere o novo animal no banco, incluindo o user_id
+        $sql = "INSERT INTO animais (nome, alimentacao, idade, producao, user_id) 
+                VALUES ('$nome', '$alimentacao', $idade, '$producao', $user_id)";
+
+        // Verifica se a inserção foi bem-sucedida
+        if ($conn->query($sql) === TRUE) {
+            $erro = "Novo animal cadastrado com sucesso!";
+            // Redireciona para a própria página para evitar reenvio do formulário
+            header("Location: animais.php");
+            exit; // Garante que o código após o redirecionamento não será executado
         } else {
-            // Previne SQL Injection
-            $nome = $conn->real_escape_string($nome);
-            $alimentacao = $conn->real_escape_string($alimentacao);
-            $idade = (int)$idade;
-            $producao = $conn->real_escape_string($producao);
-
-            // Insere o novo animal no banco
-            $sql = "INSERT INTO animais (nome, alimentacao, idade, producao) VALUES ('$nome', '$alimentacao', $idade, '$producao')";
-
-            // Verifica se a inserção foi bem-sucedida
-            if ($conn->query($sql) === TRUE) {
-                $erro = "Novo animal cadastrado com sucesso!";
-            } else {
-                $erro = "Erro ao cadastrar: " . $conn->error; // Erro na inserção
-            }
+            $erro = "Erro ao cadastrar: " . $conn->error; // Erro na inserção
         }
     }
 }
 
-// Ação de exclusão de animal
+// Verifica se a ação é excluir um animal
 if (isset($_GET['delete'])) {
-    $id = (int)$_GET['delete'];
-    $delete_sql = "DELETE FROM animais WHERE id = $id";
-    // Deleta o animal e redireciona
-    if ($conn->query($delete_sql) === TRUE) {
-        header("Location: animais.php");
-        exit;
+    $animal_id = (int) $_GET['delete']; // Obtém o ID do animal para exclusão
+
+    // Previne SQL Injection
+    $animal_id = $conn->real_escape_string($animal_id);
+
+    // Verifica se o animal pertence ao usuário logado
+    $sql = "DELETE FROM animais WHERE id = $animal_id AND user_id = {$_SESSION['usuario_id']}";
+
+    if ($conn->query($sql) === TRUE) {
+        $erro = "Animal excluído com sucesso!";
     } else {
-        $erro = "Erro ao excluir animal: " . $conn->error; // Erro na exclusão
+        $erro = "Erro ao excluir o animal: " . $conn->error;
     }
 }
 
 // Recupera os animais cadastrados
-$result = $conn->query("SELECT * FROM animais");
+$sql = "SELECT * FROM animais WHERE user_id = {$_SESSION['usuario_id']}";
+$result = $conn->query($sql);
+
+$animaisCadastrados = [];
 if ($result->num_rows > 0) {
-    // Adiciona os animais à lista
     while ($row = $result->fetch_assoc()) {
         $animaisCadastrados[] = $row;
     }
 }
-
-// Fecha a conexão com o banco
-$conn->close();
 ?>
 
 <!DOCTYPE html>
@@ -72,7 +85,6 @@ $conn->close();
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cadastro de Animais</title>
   <style>
-    /* Estilos do código HTML */
     
     /* Estilo para o corpo da página */
     body {
@@ -233,75 +245,54 @@ $conn->close();
       <button class="back-button">← Voltar</button>
     </a>
     <nav>
-    <a href="bovinos.php">Bovinos</a>
-        <a href="suinos.php">Suínos</a>
-        <a href="ovelhas.php">Ovelhas</a>
-        <a href="aves.php">Aves</a>
-        <a href="animais.php">Animais</a>
+      <a href="bovinos.php">Bovinos</a>
+      <a href="suinos.php">Suínos</a>
+      <a href="ovelhas.php">Ovelhas</a>
+      <a href="aves.php">Aves</a>
+      <a href="animais.php">Animais</a>
+      <a href="logout.php">Sair</a> 
     </nav>
+
   </header>
 
   <div class="container">
     <h2>Cadastro de Animais</h2>
-    
-    <!-- Exibe mensagem de erro ou sucesso, caso exista -->
     <?php if (!empty($erro)): ?>
-      <p style="color: green; text-align: center;"><?php echo $erro; ?></p> <!-- Exibe erro ou sucesso -->
+      <p style="color: green; text-align: center;"><?php echo $erro; ?></p>
     <?php endif; ?>
-    
-    <!-- Formulário para adicionar um novo animal -->
     <form method="POST">
-      <!-- Campo oculto que indica que a ação a ser executada é "adicionar" -->
       <input type="hidden" name="action" value="add">
-      
-      <!-- Grupo de campos para o nome do animal -->
       <div class="form-group">
         <label for="nome">Nome do Animal</label>
-        <!-- Campo de texto para o nome do animal -->
         <input type="text" id="nome" name="nome" placeholder="Digite o nome do animal" required>
       </div>
-
-      <!-- Grupo de campos para o tipo de alimentação do animal -->
       <div class="form-group">
         <label for="alimentacao">Tipo de Alimentação</label>
-        <!-- Campo de texto para o tipo de alimentação -->
         <input type="text" id="alimentacao" name="alimentacao" placeholder="Digite o tipo de alimentação" required>
       </div>
-      
-      <!-- Grupo de campos para a idade do animal -->
       <div class="form-group">
         <label for="idade">Idade</label>
-        <!-- Campo numérico para a idade do animal -->
         <input type="number" id="idade" name="idade" placeholder="Digite a idade (em anos)" required>
       </div>
-      
-      <!-- Grupo de campos para a produção do animal -->
       <div class="form-group">
         <label for="producao">Produção</label>
-        <!-- Campo de texto para a produção do animal -->
         <input type="text" id="producao" name="producao" placeholder="Digite a produção (se aplicável)">
       </div>
-
-      <!-- Botão para enviar o formulário -->
       <button type="submit">Adicionar Animal</button>
     </form>
 
     <!-- Exibe os animais cadastrados -->
     <div class="list-container">
-      <!-- Laço que exibe cada animal cadastrado -->
       <?php foreach ($animaisCadastrados as $animal): ?>
         <div class="list-item">
-          <!-- Exibe o nome, alimentação, idade e produção do animal -->
           <strong>Nome:</strong> <?php echo $animal['nome']; ?><br>
           <strong>Alimentação:</strong> <?php echo $animal['alimentacao']; ?><br>
           <strong>Idade:</strong> <?php echo $animal['idade']; ?><br>
           <strong>Produção:</strong> <?php echo $animal['producao']; ?><br>
-          <!-- Link para excluir o animal, com confirmação -->
-          <a href="?delete=<?php echo $animal['id']; ?>" class="delete-button" onclick="return confirm('Tem certeza que deseja excluir?')">Excluir</a>
-        </div>
+          <a href="?delete=<?php echo $animal['id']; ?>" class="delete-button" onclick="return confirm('Tem certeza que deseja excluir este animal?');">Excluir</a>
+          </div>
       <?php endforeach; ?>
     </div>
-</div>
-
+  </div>
 </body>
 </html>

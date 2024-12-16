@@ -1,4 +1,5 @@
 <?php
+session_start();  // Inicia a sessão 
 require_once 'conexao.php'; 
 
 $erro = ''; 
@@ -26,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $senha_md5 = md5($senha);
 
         // Verificar se o e-mail já existe no banco
-        $sql = "SELECT id FROM cadastro WHERE email = ?";
+        $sql = "SELECT id FROM usuarios WHERE email = ?";  
         $stmt = mysqli_prepare($conn, $sql); 
         mysqli_stmt_bind_param($stmt, "s", $email);
         mysqli_stmt_execute($stmt);
@@ -36,8 +37,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $erro = "Este e-mail já está cadastrado.";
         } else {
             // Inserir o novo usuário no banco de dados
-            $sql = "INSERT INTO cadastro (nome, email, senha) VALUES (?, ?, ?)";
-            $stmt = mysqli_prepare($conn, $sql); // Usando a variável $conn para a conexão
+            $sql = "INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)";  
+            $stmt = mysqli_prepare($conn, $sql); 
             mysqli_stmt_bind_param($stmt, "sss", $nome, $email, $senha_md5);
             $executado = mysqli_stmt_execute($stmt);
 
